@@ -4,10 +4,17 @@ import {dijkstra, getNodesInShortestPathOrder} from '../algorithms/dijkstra';
 
 import './PathfindingVisualizer.css';
 
+const ROW_COUNT = 20;
+const COL_COUNT = 50;
+
 const START_NODE_ROW = 10;
 const START_NODE_COL = 15;
 const FINISH_NODE_ROW = 10;
 const FINISH_NODE_COL = 35;
+
+const ANIMATION_SPEED_MS = 10;
+
+const curAlgorithm = ['DFS', 'BFS', 'Dijkstra Algorithm', 'A*'];
 
 export default class PathfindingVisualizer extends Component {
   constructor() {
@@ -15,12 +22,12 @@ export default class PathfindingVisualizer extends Component {
     this.state = {
       grid: [],
       mouseIsPressed: false,
+      algorithmId: 1, // 1. DFS 2. BFS 3.Dijkstra 4 A*
     };
   }
 
   componentDidMount() {
-    const grid = getInitialGrid();
-    this.setState({grid});
+    this.resetGrid();
   }
 
   handleMouseDown(row, col) {
@@ -38,19 +45,24 @@ export default class PathfindingVisualizer extends Component {
     this.setState({mouseIsPressed: false});
   }
 
+  onDropDownChange(evt) {
+    let targetId = evt.target.value;
+    this.setState({algorithmId: parseInt(targetId)});
+  }
+
   animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder) {
     for (let i = 0; i <= visitedNodesInOrder.length; i++) {
       if (i === visitedNodesInOrder.length) {
         setTimeout(() => {
           this.animateShortestPath(nodesInShortestPathOrder);
-        }, 10 * i);
+        }, ANIMATION_SPEED_MS * i);
         return;
       }
       setTimeout(() => {
         const node = visitedNodesInOrder[i];
         document.getElementById(`node-${node.row}-${node.col}`).className =
           'node node-visited';
-      }, 10 * i);
+      }, ANIMATION_SPEED_MS * i);
     }
   }
 
@@ -64,6 +76,26 @@ export default class PathfindingVisualizer extends Component {
     }
   }
 
+  visualizeAlgorithem(algorithmId) {
+    if (algorithmId === 1) {
+    } else if (algorithmId === 2) {
+    } else if (algorithmId === 3) {
+      this.visualizeDijkstra();
+    } else {
+    }
+  }
+
+  resetGrid() {
+    const grid = getNewGrid();
+    this.setState({grid});
+  }
+
+  visualizeDFS() {}
+
+  visualizeBFS() {}
+
+  visualizeAStar() {}
+
   visualizeDijkstra() {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
@@ -74,12 +106,35 @@ export default class PathfindingVisualizer extends Component {
   }
 
   render() {
-    const {grid, mouseIsPressed} = this.state;
+    const {grid, mouseIsPressed, algorithmId} = this.state;
 
     return (
       <>
-        <button onClick={() => this.visualizeDijkstra()}>
-          Visualize Dijkstra's Algorithm
+        <select
+          name="Algorithm"
+          onChange={evt => this.onDropDownChange(evt)}
+          class="AlgorithmDropDownMenu">
+          <option id="1" value="1">
+            Depth First Search
+          </option>
+          <option id="2" value="2">
+            Breadth First Search
+          </option>
+          <option id="3" value="3">
+            Dijkstra's Alotithm
+          </option>
+          <option id="4" value="4">
+            A*
+          </option>
+        </select>
+        <button onClick={() => this.visualizeAlgorithem(algorithmId)}>
+          Visualize {curAlgorithm[algorithmId - 1]}
+        </button>
+        <button
+          onClick={() => {
+            this.resetGrid();
+          }}>
+          Rest Grid
         </button>
         <div className="grid">
           {grid.map((row, rowIdx) => {
@@ -112,11 +167,11 @@ export default class PathfindingVisualizer extends Component {
   }
 }
 
-const getInitialGrid = () => {
+const getNewGrid = () => {
   const grid = [];
-  for (let row = 0; row < 20; row++) {
+  for (let row = 0; row < ROW_COUNT; row++) {
     const currentRow = [];
-    for (let col = 0; col < 50; col++) {
+    for (let col = 0; col < COL_COUNT; col++) {
       currentRow.push(createNode(col, row));
     }
     grid.push(currentRow);
