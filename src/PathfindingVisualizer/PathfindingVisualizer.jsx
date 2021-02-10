@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import Node from './Node/Node';
 import {dijkstra} from '../algorithms/dijkstra';
 import {DFS} from '../algorithms/DFS';
+import {BFS} from '../algorithms/BFS';
 import {getNodesInShortestPathOrder} from '../util/util';
 
 import './PathfindingVisualizer.css';
@@ -79,43 +80,29 @@ export default class PathfindingVisualizer extends Component {
     }
   }
 
-  visualizeAlgorithem(algorithmId) {
-    if (algorithmId === 1) {
-      this.visualizeDFS();
-    } else if (algorithmId === 2) {
-    } else if (algorithmId === 3) {
-      this.visualizeDijkstra();
-    } else {
-    }
-  }
-
   resetGrid() {
     const grids = getNewGrid();
     this.setState({grids: grids});
   }
 
-  visualizeDFS() {
+  visualizePath(algorithmId) {
     const {grids} = this.state;
     const startNode = grids[START_NODE_ROW][START_NODE_COL];
     const finishNode = grids[FINISH_NODE_ROW][FINISH_NODE_COL];
-    const visitedNodesInOrder = DFS(grids, startNode, finishNode);
-    // DFS don't gurrantee shortest pass.
-    // Using DFS finding shortest pass will be very time consuming.
+    let visitedNodesInOrder;
+    if (algorithmId === 1) {
+      // DFS don't gurrantee shortest pass.
+      // Using DFS finding shortest pass will be very time consuming.
+      visitedNodesInOrder = DFS(grids, startNode, finishNode);
+    } else if (algorithmId === 2) {
+      visitedNodesInOrder = BFS(grids, startNode, finishNode);
+    } else if (algorithmId === 3) {
+      visitedNodesInOrder = dijkstra(grids, startNode, finishNode);
+    } else {
+    }
+
     const firstPath = getNodesInShortestPathOrder(finishNode);
     this.animatePath(visitedNodesInOrder, firstPath);
-  }
-
-  visualizeBFS() {}
-
-  visualizeAStar() {}
-
-  visualizeDijkstra() {
-    const {grids} = this.state;
-    const startNode = grids[START_NODE_ROW][START_NODE_COL];
-    const finishNode = grids[FINISH_NODE_ROW][FINISH_NODE_COL];
-    const visitedNodesInOrder = dijkstra(grids, startNode, finishNode);
-    const nodesInShortestPathOrder = getNodesInShortestPathOrder(finishNode);
-    this.animatePath(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
   render() {
@@ -126,7 +113,7 @@ export default class PathfindingVisualizer extends Component {
         <select
           name="Algorithm"
           onChange={evt => this.onDropDownChange(evt)}
-          class="AlgorithmDropDownMenu">
+          className="AlgorithmDropDownMenu">
           <option id="1" value="1">
             Depth First Search
           </option>
@@ -140,7 +127,7 @@ export default class PathfindingVisualizer extends Component {
             A*
           </option>
         </select>
-        <button onClick={() => this.visualizeAlgorithem(algorithmId)}>
+        <button onClick={() => this.visualizePath(algorithmId)}>
           Visualize {curAlgorithm[algorithmId - 1]}
         </button>
         <button
