@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import Node from './Node/Node';
-import {dijkstra, getNodesInShortestPathOrder} from '../algorithms/dijkstra';
+import {dijkstra} from '../algorithms/dijkstra';
+import {DFS} from '../algorithms/DFS';
+import {getNodesInShortestPathOrder} from '../util/util';
 
 import './PathfindingVisualizer.css';
 
@@ -20,7 +22,7 @@ export default class PathfindingVisualizer extends Component {
   constructor() {
     super();
     this.state = {
-      grid: [],
+      grids: [],
       mouseIsPressed: false,
       algorithmId: 1, // 1. DFS 2. BFS 3.Dijkstra 4 A*
     };
@@ -31,13 +33,13 @@ export default class PathfindingVisualizer extends Component {
   }
 
   handleMouseDown(row, col) {
-    const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+    const newGrid = getNewGridWithWallToggled(this.state.grids, row, col);
     this.setState({grid: newGrid, mouseIsPressed: true});
   }
 
   handleMouseEnter(row, col) {
     if (!this.state.mouseIsPressed) return;
-    const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+    const newGrid = getNewGridWithWallToggled(this.state.grids, row, col);
     this.setState({grid: newGrid});
   }
 
@@ -50,10 +52,11 @@ export default class PathfindingVisualizer extends Component {
     this.setState({algorithmId: parseInt(targetId)});
   }
 
-  animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder) {
+  animatePath(visitedNodesInOrder, nodesInShortestPathOrder) {
     for (let i = 0; i <= visitedNodesInOrder.length; i++) {
       if (i === visitedNodesInOrder.length) {
         setTimeout(() => {
+          // DFS don't gurrantee shortest path.
           this.animateShortestPath(nodesInShortestPathOrder);
         }, ANIMATION_SPEED_MS * i);
         return;
@@ -78,6 +81,7 @@ export default class PathfindingVisualizer extends Component {
 
   visualizeAlgorithem(algorithmId) {
     if (algorithmId === 1) {
+      this.visualizeDFS();
     } else if (algorithmId === 2) {
     } else if (algorithmId === 3) {
       this.visualizeDijkstra();
@@ -86,27 +90,36 @@ export default class PathfindingVisualizer extends Component {
   }
 
   resetGrid() {
-    const grid = getNewGrid();
-    this.setState({grid});
+    const grids = getNewGrid();
+    this.setState({grids: grids});
   }
 
-  visualizeDFS() {}
+  visualizeDFS() {
+    const {grids} = this.state;
+    const startNode = grids[START_NODE_ROW][START_NODE_COL];
+    const finishNode = grids[FINISH_NODE_ROW][FINISH_NODE_COL];
+    const visitedNodesInOrder = DFS(grids, startNode, finishNode);
+    // DFS don't gurrantee shortest pass.
+    // Using DFS finding shortest pass will be very time consuming.
+    const firstPath = getNodesInShortestPathOrder(finishNode);
+    this.animatePath(visitedNodesInOrder, firstPath);
+  }
 
   visualizeBFS() {}
 
   visualizeAStar() {}
 
   visualizeDijkstra() {
-    const {grid} = this.state;
-    const startNode = grid[START_NODE_ROW][START_NODE_COL];
-    const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
-    const visitedNodesInOrder = dijkstra(grid, startNode, finishNode);
+    const {grids} = this.state;
+    const startNode = grids[START_NODE_ROW][START_NODE_COL];
+    const finishNode = grids[FINISH_NODE_ROW][FINISH_NODE_COL];
+    const visitedNodesInOrder = dijkstra(grids, startNode, finishNode);
     const nodesInShortestPathOrder = getNodesInShortestPathOrder(finishNode);
-    this.animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
+    this.animatePath(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
   render() {
-    const {grid, mouseIsPressed, algorithmId} = this.state;
+    const {grids, mouseIsPressed, algorithmId} = this.state;
 
     return (
       <>
@@ -137,7 +150,7 @@ export default class PathfindingVisualizer extends Component {
           Rest Grid
         </button>
         <div className="grid">
-          {grid.map((row, rowIdx) => {
+          {grids.map((row, rowIdx) => {
             return (
               <div key={rowIdx}>
                 {row.map((node, nodeIdx) => {
