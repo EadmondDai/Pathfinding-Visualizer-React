@@ -3,6 +3,7 @@ import Node from './Node/Node';
 import {dijkstra} from '../algorithms/dijkstra';
 import {DFS} from '../algorithms/DFS';
 import {BFS} from '../algorithms/BFS';
+import {AStar} from '../algorithms/AStar';
 import {getNodesInShortestPathOrder} from '../util/util';
 
 import './PathfindingVisualizer.css';
@@ -99,6 +100,7 @@ export default class PathfindingVisualizer extends Component {
     } else if (algorithmId === 3) {
       visitedNodesInOrder = dijkstra(grids, startNode, finishNode);
     } else {
+      visitedNodesInOrder = AStar(grids, startNode, finishNode);
     }
 
     const firstPath = getNodesInShortestPathOrder(finishNode);
